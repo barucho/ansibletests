@@ -1,0 +1,28 @@
+- hosts: all
+  gather_facts: true
+  become: yes
+  pre_tasks:
+    - include: tasks/vault_get_secrets.yml
+      tags:
+      - always
+      no_log: True
+      run_once: True
+  roles:
+    - { role: count-affected-hosts, tags: ['r_debug'] }
+    - { role: common, tags: ['r_common'] }
+    - { role: mysql-install, tags: ['r_mysql_install'] } 
+    - { role: mysql-config, tags: ['r_mysql_config'] } 
+    #- { role: prometheus-exporter, tags: ['r_monitoring'] }
+    #- { role: mysql-backup-aws-snap , tags: ['r_backup']}
+  vars_files:
+      - vars/mysql.yml
+      - vars/vault_cred.yml
+  vars:
+    db_type: mysql
+    cluster_type: mysql
+    group_cluster_name: "{{ cluster_name | replace('-','_') }}"
+    master_host: "{{ groups[cluster_type + '_' + group_cluster_name] | intersect(groups['master']) | first }}"
+    co_master_host: "{{ groups[cluster_type + '_' + group_cluster_name] | intersect(groups['co-master']) | first }}"
+    backup_host: "{{ groups[cluster_type + '_' + group_cluster_name] | intersect(groups['backup']) | first }}"
+    bi_host: "{{ groups[cluster_type + '_' + group_cluster_name] | intersect(groups['bi']) | first }}"
+    all_hosts_in_cluster: "{{ groups[cluster_type + '_' + group_cluster_name] }}"
