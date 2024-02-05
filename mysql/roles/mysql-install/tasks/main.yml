@@ -1,0 +1,32 @@
+- meta: end_play
+  when: cluster_type != "mysql"
+- debug:
+    msg: "ending play"
+  when: cluster_type != "mysql"
+# base install for mysql x.x 
+- name: base install for mysql x.x
+  include: ensure-mysql-software.yml
+  tags: 
+    - mysql_install
+# Create env
+- name: Create MySQL env
+  include: create-directories.yml
+  tags: 
+    - mysql_install
+# Configure MySQL.
+- name: Configure MySQL files
+  include: manage-mysql-config-file.yml
+  tags: 
+    - mysql_config_files
+# --initialize-insecure and start service 
+- name: --initialize-insecure and start service 
+  include: configure-mysql-instance.yml
+  tags:
+    - install_mysql
+    - initialize_mysql
+# change root passowrd after first install 
+- name: secure mysql 
+  include: secure_mysql.yml
+  tags:
+    - secure_mysql
+    - mysql_root_password

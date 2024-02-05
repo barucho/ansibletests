@@ -1,0 +1,45 @@
+# configure mysql config files 
+- name: Copy my.cnf global MySQL configuration.
+  template:
+    src: my.cnf.j2
+    dest: "/etc/mysql/my_{{ cluster_name }}.cnf"
+    owner: root
+    group: root
+    mode: 0644
+    force: "{{ overwrite_mycnf }}"
+  #notify: restart mysql
+
+- name: Create symbolic link to MySQL config file to default file 
+  file:
+    src: "/etc/mysql/my_{{ cluster_name }}.cnf"
+    dest: "/etc/mysql/my.cnf"
+    state: link
+
+- name: create etc mysql
+  file: 
+    path: "/root/.mysqlsh"
+    owner: root
+    group: root
+    mode: 0775
+    recurse: yes
+    state: directory
+
+
+- name: Create mysqlsh config file 
+  template:
+    src: options.json.j2
+    dest: "/root/.mysqlsh/options.json"
+    owner: root
+    group: root
+    mode: 0644
+    force: "{{ overwrite_mycnf }}"
+
+
+- name: Create mysql login file 
+  copy: 
+    src: mysql_login.sh
+    dest:  "/etc/profile.d/mysql_login.sh"
+    owner: root
+    group: root
+    mode: 0644
+  #skip_broken: yes 
